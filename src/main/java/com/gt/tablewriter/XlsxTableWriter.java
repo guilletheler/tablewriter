@@ -1,7 +1,6 @@
 package com.gt.tablewriter;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
@@ -17,14 +16,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import lombok.Getter;
-import lombok.Setter;
-
-public class XlsxTableWriter implements ITableWriter {
-
-	@Getter
-	@Setter
-	String fileName = "";
+public class XlsxTableWriter extends AbstractTableWriter {
 
 	Workbook wb;
 	Sheet sheet;
@@ -32,32 +24,35 @@ public class XlsxTableWriter implements ITableWriter {
 
 	int rows = 0;
 	int cells = 0;
+
 	CellStyle dateCellStyle;
 	CellStyle integerCellStyle;
 	CellStyle numericCellStyle;
 
 	public void open() {
 
-		if (fileName.toLowerCase().endsWith(".xls")) {
-			wb = new XSSFWorkbook();
-		} else {
+		super.open();
+
+		if (getProperties().getProperty("EXCEL_FORMAT", "xlsx").toLowerCase().equals("xls")) {
 			wb = new HSSFWorkbook();
+		} else {
+			wb = new XSSFWorkbook();
 		}
 
 		dateCellStyle = wb.createCellStyle();
-		dateCellStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("d/m/yy h:mm"));
+		dateCellStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(getDateFormat()));
 
 		integerCellStyle = wb.createCellStyle();
-		integerCellStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("#,##0"));
+		integerCellStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(getIntegerFormat()));
 
 		numericCellStyle = wb.createCellStyle();
-		numericCellStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("#,##0.00"));
+		numericCellStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(getDecimalFormat()));
 
-		sheet = wb.createSheet("Hoja1");
-		addRecord();
+		sheet = wb.createSheet(getProperties().getProperty("SHEET_NAME", "Hoja1"));
+		addNewLine();
 	}
 
-	public void addRecord() {
+	public void addNewLine() {
 		row = sheet.createRow(rows++);
 		cells = 0;
 	}
@@ -108,49 +103,21 @@ public class XlsxTableWriter implements ITableWriter {
 		}
 	}
 
-	public void close() {
-		try (OutputStream fileOut = new FileOutputStream(fileName)) {
-			wb.write(fileOut);
-		} catch (FileNotFoundException e) {
-			Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Error al guardar xlsx", e);
-		} catch (IOException e) {
-			Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Error al guardar xlsx", e);
+	public void writeTo(OutputStream outputStream) throws IOException {
+		try {
+			wb.write(outputStream);
+		} catch (FileNotFoundException ex) {
+			Logger.getLogger(XlsxTableWriter.class.getName()).log(Level.SEVERE,
+					"Error al escribir excel en outputStream", ex);
 		}
 	}
 
-	public void addRecord(Integer value) {
-		addField(value);
-		addRecord();
-	}
-
-	@Override
-	public void addRecord(Long value) {
-		addField(value);
-		addRecord();
-	}
-
-	@Override
-	public void addRecord(Double value) {
-		addField(value);
-		addRecord();
-	}
-
-	@Override
-	public void addRecord(String value) {
-		addField(value);
-		addRecord();
-	}
-
-	@Override
-	public void addRecord(Date value) {
-		addField(value);
-		addRecord();
-	}
-
-	@Override
-	public void addRecord(Boolean value) {
-		addField(value);
-		addRecord();
+	public void close() {
+		try {
+			wb.close();
+		} catch (IOException ex) {
+			Logger.getLogger(XlsxTableWriter.class.getName()).log(Level.SEVERE, "error al cerrar excel", ex);
+		}
 	}
 
 }

@@ -1,7 +1,9 @@
 package com.gt.tablewriter;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -11,15 +13,7 @@ import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.Setter;
 
-public class CsvTableWriter implements ITableWriter {
-
-	@Getter
-	@Setter
-	String fileName = "";
-
-	@Getter
-	@Setter
-	PrintStream printStream;
+public class CsvTableWriter extends AbstractTableWriter {
 
 	@Getter
 	@Setter
@@ -27,45 +21,43 @@ public class CsvTableWriter implements ITableWriter {
 
 	@Getter
 	@Setter
-	String dateFormat = "yyyy/MM/dd HH:mm:ss";
+	String EOL = "\n";
 
 	@Getter
 	@Setter
-	String decimalFormat = "0.00";
+	DateFormat sdf = null;
 
 	@Getter
 	@Setter
-	String integerFormat = "0";
-
-	SimpleDateFormat sdf = null;
 	DecimalFormat decf = null;
-	DecimalFormat intf = null;
 
+	@Getter
+	@Setter
+	DecimalFormat intf = null;
+	
 	boolean first = true;
+	
+	ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
 	public void open() {
-		if (printStream == null) {
-			try {
-				printStream = new PrintStream(fileName);
-			} catch (FileNotFoundException e) {
-				Logger.getLogger(getClass().getName()).log(Level.SEVERE,
-						"Error abriendo archivo " + fileName + " para escritura");
-			}
-		}
-		sdf = new SimpleDateFormat(dateFormat);
-		decf = new DecimalFormat(decimalFormat);
-		intf = new DecimalFormat(integerFormat);
+
+		super.open();
+
+		this.setSeparator(properties.getProperty("SEPARATOR", this.getSeparator()));
+		this.setEOL(properties.getProperty("EOL", this.getEOL()));
+
+		sdf = new SimpleDateFormat(this.getDateFormat());
 	}
 
-	public void addRecord() {
-		printStream.println();
+	public void addNewLine() {
+		this.write(getEOL());
 		first = true;
 	}
 
 	public void addField(Integer value) {
 		addSeparator();
 		if (value != null) {
-			printStream.print(intf.format(value));
+			write(intf.format(value));
 		}
 		first = false;
 	}
@@ -73,7 +65,7 @@ public class CsvTableWriter implements ITableWriter {
 	public void addField(Long value) {
 		addSeparator();
 		if (value != null) {
-			printStream.print(intf.format(value));
+			write(intf.format(value));
 		}
 		first = false;
 	}
@@ -81,7 +73,7 @@ public class CsvTableWriter implements ITableWriter {
 	public void addField(Double value) {
 		addSeparator();
 		if (value != null) {
-			printStream.print(decf.format(value));
+			write(decf.format(value));
 		}
 		first = false;
 
@@ -90,7 +82,7 @@ public class CsvTableWriter implements ITableWriter {
 	public void addField(String value) {
 		addSeparator();
 		if (value != null) {
-			printStream.print(value);
+			write(value);
 		}
 		first = false;
 	}
@@ -98,7 +90,7 @@ public class CsvTableWriter implements ITableWriter {
 	public void addField(Date value) {
 		addSeparator();
 		if (value != null) {
-			printStream.print(sdf.format(value));
+			write(sdf.format(value));
 		}
 		first = false;
 	}
@@ -107,54 +99,35 @@ public class CsvTableWriter implements ITableWriter {
 	public void addField(Boolean value) {
 		addSeparator();
 		if (value != null) {
-			printStream.print(value ? "Si" : "No");
+			write(value ? "Si" : "No");
 		}
 		first = false;
 	}
 
 	public void close() {
-		printStream.close();
+		try {
+			outStream.close();
+		} catch (IOException e) {
+			Logger.getLogger(CsvTableWriter.class.getName()).log(Level.SEVERE, "Error al cerrar tablewriter", e);
+		}
 	}
 
 	private void addSeparator() {
 		if (!first) {
-			printStream.print(separator);
+			write(separator);
 		}
 	}
 
-	public void addRecord(Integer value) {
-		addField(value);
-		addRecord();
+	private void write(String string) {
+		try {
+			outStream.write(string.getBytes());
+		} catch (Exception e) {
+			Logger.getLogger(AbstractTableWriter.class.getName()).log(Level.SEVERE, "Error escribiendo en outputStream",
+					e);
+		}
 	}
 
-	@Override
-	public void addRecord(Long value) {
-		addField(value);
-		addRecord();
+	public void writeTo(OutputStream outputStream) throws IOException {
+		outputStream.write(outStream.toByteArray());
 	}
-
-	@Override
-	public void addRecord(Double value) {
-		addField(value);
-		addRecord();
-	}
-
-	@Override
-	public void addRecord(String value) {
-		addField(value);
-		addRecord();
-	}
-
-	@Override
-	public void addRecord(Date value) {
-		addField(value);
-		addRecord();
-	}
-
-	@Override
-	public void addRecord(Boolean value) {
-		addField(value);
-		addRecord();
-	}
-
 }
