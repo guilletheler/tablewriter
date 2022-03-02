@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -157,7 +158,11 @@ public abstract class AbstractTableWriter implements ITableWriter {
 
     @Override
     public void addObjectValue(Object value) {
-        addObjectValue(value.getClass(), value);
+        if(value == null) {
+            addObjectValue(String.class, "");
+        } else {
+            addObjectValue(value.getClass(), value);
+        }
     }
 
     private void addObjectValue(Class<?> objectClass, Object value) {
@@ -201,6 +206,13 @@ public abstract class AbstractTableWriter implements ITableWriter {
                 break;
             case "Calendar":
                 addField((Calendar) value);
+                break;
+            case "Timestamp":
+                addField(new Date(((Timestamp) value).getTime()));
+                break;
+            default:
+                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Clase no soportada: " + objectClass.getSimpleName());
+                addField(value.toString());
                 break;
         }
     }
