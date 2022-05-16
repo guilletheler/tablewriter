@@ -50,6 +50,11 @@ public abstract class AbstractTableWriter implements ITableWriter {
 
     @Override
     public void open() {
+
+        if(properties == null) {
+            properties = new Properties();
+        }
+
         this.setDateFormat(properties.getProperty("DATE_FORMAT", getDateFormat()));
         this.setDecimalFormat(properties.getProperty("DECIMAL_FORMAT", getDecimalFormat()));
         this.setIntegerFormat(properties.getProperty("INTEGER_FORMAT", getIntegerFormat()));
