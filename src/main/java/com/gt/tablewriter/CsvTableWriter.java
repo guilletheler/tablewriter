@@ -11,8 +11,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor
 public class CsvTableWriter extends AbstractTableWriter {
 
 	@Getter
@@ -34,14 +36,24 @@ public class CsvTableWriter extends AbstractTableWriter {
 	@Getter
 	@Setter
 	DecimalFormat intf = null;
-	
+
 	boolean first = true;
-	
-	ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+
+	@Getter
+	@Setter
+	OutputStream internalStream = null;
+
+	public CsvTableWriter(OutputStream outputStream) {
+		this.internalStream = outputStream;
+	}
 
 	public void open() {
 
 		super.open();
+
+		if (internalStream == null) {
+			internalStream = new ByteArrayOutputStream();
+		}
 
 		this.setSeparator(properties.getProperty("SEPARATOR", this.getSeparator()));
 		this.setEOL(properties.getProperty("EOL", this.getEOL()));
@@ -110,7 +122,7 @@ public class CsvTableWriter extends AbstractTableWriter {
 
 	public void close() {
 		try {
-			outStream.close();
+			internalStream.close();
 		} catch (IOException e) {
 			Logger.getLogger(CsvTableWriter.class.getName()).log(Level.SEVERE, "Error al cerrar tablewriter", e);
 		}
@@ -124,7 +136,7 @@ public class CsvTableWriter extends AbstractTableWriter {
 
 	private void write(String string) {
 		try {
-			outStream.write(string.getBytes());
+			internalStream.write(string.getBytes());
 		} catch (Exception e) {
 			Logger.getLogger(AbstractTableWriter.class.getName()).log(Level.SEVERE, "Error escribiendo en outputStream",
 					e);
@@ -132,6 +144,10 @@ public class CsvTableWriter extends AbstractTableWriter {
 	}
 
 	public void writeTo(OutputStream outputStream) throws IOException {
-		outputStream.write(outStream.toByteArray());
+		if (outputStream instanceof ByteArrayOutputStream) {
+			outputStream.write(((ByteArrayOutputStream) internalStream).toByteArray());
+		} else {
+			throw new IllegalStateException("internalStream no es ByteArrayOutputStream");
+		}
 	}
 }
