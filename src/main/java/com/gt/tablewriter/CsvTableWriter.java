@@ -47,6 +47,10 @@ public class CsvTableWriter extends AbstractTableWriter {
 		this.setEOL(properties.getProperty("EOL", this.getEOL()));
 
 		sdf = new SimpleDateFormat(this.getDateFormat());
+
+		decf = new DecimalFormat(this.getDecimalFormat());
+		intf = new DecimalFormat(this.getIntegerFormat());
+
 	}
 
 	public void addNewLine() {
