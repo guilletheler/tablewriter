@@ -2,42 +2,47 @@ package com.gt.tablewriter;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Properties;
 
 public interface ITableWriter {
-	void open();
-	void open(Properties properties);
+  void open();
 
-	void addNewLine();
+  boolean isOpen();
 
-	<T> void addPojos(Iterable<T> iterable);
-	<T> void addPojo(T pojo);
-	void addLine(Object[] line);
-	void addLines(Iterable<Object[]> line);
+  void addNewLine();
 
-	void addField(String value);
+  <T> void addPojos(Iterable<T> iterable);
 
-	void addField(Short value);
-	void addField(Integer value);
-	void addField(Long value);
-	void addField(BigInteger value);
+  <T> void addPojo(T pojo);
 
-	void addField(Float value);
-	void addField(Double value);
-	void addField(BigDecimal value);
+  void writeTitles(String[] titles);
 
-	void addField(Boolean value);
+  void addLine(Object[] line);
+  void addLines(Iterable<Object[]> line);
 
-	void addField(Date value);
-	void addField(Calendar value);
-	void close();
+  void addField(String value);
 
-	void writeTo(OutputStream outputStream) throws IOException;
-	void writeTo(String fileName) throws IOException;
+  void addField(Short value);
+  void addField(Integer value);
+  void addField(Long value);
+  void addField(BigInteger value);
 
-	void addObjectValue(Object value);
+  void addField(Float value);
+  void addField(Double value);
+  void addField(BigDecimal value);
+
+  void addField(Boolean value);
+
+  void addField(Date value);
+  void addField(Calendar value);
+  void close();
+
+  void writeTo(OutputStream outputStream) throws IOException;
+  void writeTo(String fileName) throws IOException;
+
+  void addObjectValue(Object value);
 }
