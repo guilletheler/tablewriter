@@ -43,8 +43,7 @@ public class XlsxTableWriter extends AbstractTableWriter {
     if (
       getProperties()
         .getProperty("EXCEL_FORMAT", "xlsx")
-        .toLowerCase()
-        .equals("xls")
+        .equalsIgnoreCase("xls")
     ) {
       wb = new HSSFWorkbook();
     } else {
