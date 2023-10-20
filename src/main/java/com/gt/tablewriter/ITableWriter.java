@@ -2,18 +2,17 @@ package com.gt.tablewriter;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.Date;
 
 public interface ITableWriter {
-  void open();
-
-  boolean isOpen();
+  void prepare();
 
   void addNewLine();
+
+  <T> void addPojos(Iterable<T> iterable, boolean writeTitles);
 
   <T> void addPojos(Iterable<T> iterable);
 

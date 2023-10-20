@@ -1,5 +1,7 @@
 package com.gt.tablewriter;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -8,12 +10,12 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class DataGen {
+public class TestHelper {
 
   public static List<Pojo> buildPojos(int cant) {
     List<Pojo> ret = new ArrayList<>();
 
-    ColConfig nombre = new ColConfig<String>(
+    ColConfig<String> nombre = new ColConfig<String>(
       "Nombre",
       String.class,
       10,
@@ -22,7 +24,7 @@ public class DataGen {
       null,
       null
     );
-    ColConfig edad = new ColConfig<Integer>(
+    ColConfig<Integer> edad = new ColConfig<Integer>(
       "Edad",
       Integer.class,
       null,
@@ -31,7 +33,7 @@ public class DataGen {
       80,
       null
     );
-    ColConfig activo = new ColConfig<Boolean>(
+    ColConfig<Boolean> activo = new ColConfig<Boolean>(
       "Activo",
       Boolean.class,
       null,
@@ -40,7 +42,7 @@ public class DataGen {
       null,
       null
     );
-    ColConfig inicio = new ColConfig<Date>(
+    ColConfig<Date> inicio = new ColConfig<Date>(
       "Inicio",
       Date.class,
       null,
@@ -49,7 +51,7 @@ public class DataGen {
       null,
       null
     );
-    ColConfig saldo = new ColConfig<Double>(
+    ColConfig<Double> saldo = new ColConfig<Double>(
       "Saldo",
       Double.class,
       null,
@@ -65,9 +67,16 @@ public class DataGen {
           .builder()
           .nombre(buildString(nombre))
           .activo(buildBoolean(activo))
+          .activo1(buildBoolean(activo))
           .edad(buildInt(edad))
+          .edad1(buildInt(edad))
           .inicio(buildDate(inicio))
           .saldo(buildDouble(saldo))
+          .saldo1(buildDouble(saldo))
+          .shortValue(buildInt(edad).shortValue())
+          .shortValue1(buildInt(edad).shortValue())
+          .longValue(buildInt(edad).longValue())
+          .longValue1(buildInt(edad).longValue())
           .build()
       );
     }
@@ -220,5 +229,100 @@ public class DataGen {
     // } while (val >= colConfig.getMinValue() && val <= colConfig.getMaxValue());
 
     return val.doubleValue();
+  }
+
+  static List<ColConfig<?>> buyildColConfigs() {
+    List<ColConfig<?>> colConfigs = new ArrayList<>();
+
+    colConfigs.add(
+      new ColConfig<String>("Nombre", String.class, 10, 18, null, null, null)
+    );
+    colConfigs.add(
+      new ColConfig<Date>("Fecha", Date.class, null, null, null, null, null)
+    );
+    colConfigs.add(
+      new ColConfig<Integer>("Numero", Integer.class, 10, 18, null, null, null)
+    );
+    colConfigs.add(
+      new ColConfig<Double>("Importe", Double.class, 10, 18, null, null, null)
+    );
+    colConfigs.add(
+      new ColConfig<Boolean>(
+        "booleano",
+        Boolean.class,
+        10,
+        18,
+        null,
+        null,
+        null
+      )
+    );
+
+    return colConfigs;
+  }
+
+  public static void writeFieldsData(ITableWriter writer) {
+    writer.addField(Calendar.getInstance());
+    writer.addField((Calendar) null);
+
+    writer.addField(new Date());
+    writer.addField((Date) null);
+
+    writer.addField(Boolean.TRUE);
+    writer.addField((Boolean) null);
+
+    writer.addField(BigDecimal.valueOf(100l));
+    writer.addField((BigDecimal) null);
+
+    writer.addField(Double.valueOf(10));
+    writer.addField((Double) null);
+
+    writer.addField(Float.valueOf("123"));
+    writer.addField((Float) null);
+
+    writer.addField(BigInteger.valueOf(123l));
+    writer.addField((BigInteger) null);
+
+    writer.addField(123L);
+    writer.addField((Long) null);
+
+    writer.addField(Integer.valueOf(123));
+    writer.addField((Integer) null);
+
+    writer.addField(Short.valueOf("123"));
+    writer.addField((Short) null);
+
+    writer.addField("");
+    writer.addField((String) null);
+  }
+
+  public static void writePojoData(ITableWriter writer) {
+    List<Pojo> data = TestHelper.buildPojos(500);
+
+    writer.addPojos(data);
+
+    data = TestHelper.buildPojos(100);
+
+    writer.addPojos(data, false);
+  }
+
+  public static void writePlainData(ITableWriter writer) {
+    List<ColConfig<?>> colConfigs = buyildColConfigs();
+
+    writer.writeTitles(
+      colConfigs
+        .stream()
+        .map(cc -> cc.getName())
+        .collect(Collectors.toList())
+        .toArray(new String[] {})
+    );
+
+    List<Object[]> data = TestHelper.buildData(colConfigs, 500);
+
+    writer.addLines(data);
+
+    data = TestHelper.buildData(colConfigs, 100);
+
+    writer.addPojos(data, false);
   }
 }

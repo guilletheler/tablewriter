@@ -7,10 +7,12 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import lombok.Getter;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -18,27 +20,41 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class XlsxTableWriter extends AbstractTableWriter {
 
+  @Getter
   Workbook wb;
+
+  @Getter
   Sheet sheet;
-  Row row;
 
-  int rows = 0;
-  int cells = 0;
+  Row curRow;
 
+  @Getter
+  int nextRowNumber = 0;
+
+  @Getter
+  int nextCellNumber = 0;
+
+  @Getter
   CellStyle dateCellStyle;
+
+  @Getter
   CellStyle integerCellStyle;
+
+  @Getter
   CellStyle numericCellStyle;
 
   public XlsxTableWriter() {
     super();
+    this.prepare();
   }
 
   public XlsxTableWriter(Properties properties) {
     super(properties);
+    this.prepare();
   }
 
-  public void open() {
-    super.open();
+  public void prepare() {
+    super.prepare();
 
     if (
       getProperties()
@@ -54,6 +70,7 @@ public class XlsxTableWriter extends AbstractTableWriter {
     dateCellStyle.setDataFormat(
       wb.getCreationHelper().createDataFormat().getFormat(getDateFormat())
     );
+    dateCellStyle.setAlignment(HorizontalAlignment.LEFT);
 
     integerCellStyle = wb.createCellStyle();
     integerCellStyle.setDataFormat(
@@ -74,12 +91,12 @@ public class XlsxTableWriter extends AbstractTableWriter {
   }
 
   public void addNewLine() {
-    row = sheet.createRow(rows++);
-    cells = 0;
+    curRow = sheet.createRow(nextRowNumber++);
+    nextCellNumber = 0;
   }
 
   public void addField(Integer value) {
-    Cell cell = row.createCell(cells++, CellType.NUMERIC);
+    Cell cell = createNewCell(CellType.NUMERIC);
     if (value != null) {
       cell.setCellValue(value.doubleValue());
     }
@@ -87,7 +104,7 @@ public class XlsxTableWriter extends AbstractTableWriter {
   }
 
   public void addField(Long value) {
-    Cell cell = row.createCell(cells++, CellType.NUMERIC);
+    Cell cell = createNewCell(CellType.NUMERIC);
     if (value != null) {
       cell.setCellValue(value.doubleValue());
     }
@@ -95,7 +112,7 @@ public class XlsxTableWriter extends AbstractTableWriter {
   }
 
   public void addField(Double value) {
-    Cell cell = row.createCell(cells++, CellType.NUMERIC);
+    Cell cell = createNewCell(CellType.NUMERIC);
     if (value != null) {
       cell.setCellValue(value.doubleValue());
     }
@@ -103,14 +120,14 @@ public class XlsxTableWriter extends AbstractTableWriter {
   }
 
   public void addField(String value) {
-    Cell cell = row.createCell(cells++);
+    Cell cell = createNewCell();
     if (value != null) {
       cell.setCellValue(value);
     }
   }
 
   public void addField(Date value) {
-    Cell cell = row.createCell(cells++);
+    Cell cell = createNewCell();
     if (value != null) {
       cell.setCellValue(value);
     }
@@ -118,13 +135,34 @@ public class XlsxTableWriter extends AbstractTableWriter {
   }
 
   public void addField(Boolean value) {
-    Cell cell = row.createCell(cells++);
+    Cell cell = createNewCell(CellType.BOOLEAN);
     if (value != null) {
       cell.setCellValue(value);
     }
   }
 
+  private Cell createNewCell() {
+    return createNewCell(null);
+  }
+
+  private Cell createNewCell(CellType cellType) {
+    Cell cell;
+    if (cellType != null) {
+      cell = curRow.createCell(nextCellNumber, cellType);
+    } else {
+      cell = curRow.createCell(nextCellNumber);
+    }
+
+    nextCellNumber++;
+
+    return cell;
+  }
+
   public void writeTo(OutputStream outputStream) throws IOException {
+    for (int x = 0; x <= sheet.getPhysicalNumberOfRows(); x++) {
+      sheet.autoSizeColumn(x);
+    }
+
     try {
       wb.write(outputStream);
     } catch (FileNotFoundException ex) {

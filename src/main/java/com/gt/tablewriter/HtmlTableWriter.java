@@ -1,6 +1,9 @@
 package com.gt.tablewriter;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
@@ -8,8 +11,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import org.jsoup.Jsoup;
@@ -20,50 +22,7 @@ public class HtmlTableWriter extends AbstractTableWriter {
 
   @Getter
   @Setter
-  String template =
-    "<!DOCTYPE html>\r\n" +
-    "<html>\r\n" +
-    "<head>\r\n" +
-    "<style>\r\n" +
-    "table {\r\n" +
-    "  font-family: arial, sans-serif;\r\n" +
-    "  border-collapse: collapse;\r\n" +
-    "  width: 100%;\r\n" +
-    "}\r\n" +
-    "\r\n" +
-    ".numeric-field {\r\n" +
-    "  text-align: right;\r\n" +
-    "}\r\n" +
-    "\r\n" +
-    ".date-field {\r\n" +
-    "  text-align: left;\r\n" +
-    "}\r\n" +
-    "\r\n" +
-    ".boolean-field {\r\n" +
-    "  text-align: left;\r\n" +
-    "}\r\n" +
-    "\r\n" +
-    ".string-field {\r\n" +
-    "  text-align: left;\r\n" +
-    "}\r\n" +
-    "\r\n" +
-    "td, th {\r\n" +
-    "  border: 1px solid #dddddd;\r\n" +
-    "  padding: 8px;\r\n" +
-    "}\r\n" +
-    "\r\n" +
-    "tr:nth-child(even) {\r\n" +
-    "  background-color: #dddddd;\r\n" +
-    "}\r\n" +
-    "</style>\r\n" +
-    "</head>\r\n" +
-    "<body>\r\n" +
-    "\r\n" +
-    "<table id=\"table-data\">\r\n" +
-    "</table>\r\n" +
-    "\r\n" +
-    "</body>\r\n" +
-    "</html>";
+  String template;
 
   @Getter
   @Setter
@@ -86,6 +45,9 @@ public class HtmlTableWriter extends AbstractTableWriter {
   String stringCssClass = "string-field";
 
   @Getter
+  String tableDataId = "table-data";
+
+  @Getter
   @Setter
   DecimalFormat decf = null;
 
@@ -103,36 +65,55 @@ public class HtmlTableWriter extends AbstractTableWriter {
 
   public HtmlTableWriter() {
     super();
+    this.prepare();
   }
 
   public HtmlTableWriter(Properties properties) {
     super(properties);
+    this.prepare();
   }
 
   public HtmlTableWriter(Properties properties, OutputStream outputStream) {
     super(properties);
     this.outputStream = outputStream;
+    this.prepare();
   }
 
   public HtmlTableWriter(OutputStream outputStream) {
     super();
     this.outputStream = outputStream;
+    this.prepare();
   }
 
-  public void open() {
-    super.open();
+  public void prepare() {
+    super.prepare();
 
-    this.setTemplate(properties.getProperty("TEMPLATE", this.template));
+    if (template == null) {
+      this.setTemplate(properties.getProperty("TEMPLATE", null));
+    }
+
+    if (template == null) {
+      this.setTemplate(loadTemplateFromResources());
+    }
+
+    this.doc = Jsoup.parse(this.template);
+
+    this.setTableDataId(
+        properties.getProperty("TABLE_DATA_ID", this.tableDataId)
+      );
 
     this.setNumberCssClass(
         properties.getProperty("NUMBER_CLASS", this.numberCssClass)
       );
+
     this.setDateCssClass(
         properties.getProperty("DATE_CLASS", this.dateCssClass)
       );
+
     this.setBooleanCssClass(
         properties.getProperty("BOOLEAN_CLASS", this.booleanCssClass)
       );
+
     this.setStringCssClass(
         properties.getProperty("STRING_CLASS", this.stringCssClass)
       );
@@ -141,9 +122,23 @@ public class HtmlTableWriter extends AbstractTableWriter {
 
     decf = new DecimalFormat(this.getDecimalFormat());
     intf = new DecimalFormat(this.getIntegerFormat());
+  }
 
-    this.doc = Jsoup.parse(this.template);
-    this.tableElement = this.doc.select("table#table-data").first();
+  protected String loadTemplateFromResources() {
+    InputStream inputStream = getClass().getResourceAsStream("/template.html");
+    InputStreamReader streamReader = new InputStreamReader(
+      inputStream,
+      StandardCharsets.UTF_8
+    );
+    BufferedReader reader = new BufferedReader(streamReader);
+    return reader.lines().collect(Collectors.joining("\n"));
+  }
+
+  public void setTableDataId(String tableDataId) {
+    this.tableDataId = tableDataId;
+    if (this.doc != null) {
+      this.tableElement = this.doc.select("table#" + this.tableDataId).first();
+    }
   }
 
   public boolean isOpen() {
@@ -151,10 +146,6 @@ public class HtmlTableWriter extends AbstractTableWriter {
   }
 
   public void writeTitles(String[] titles) {
-    if (!this.isOpen()) {
-      this.open();
-    }
-
     Element titlesElement = this.doc.createElement("tr");
     this.tableElement.appendChild(titlesElement);
 
@@ -224,9 +215,6 @@ public class HtmlTableWriter extends AbstractTableWriter {
   private void write(String formatedField, String cssClass) {
     Element newField = doc.createElement("td");
 
-    Logger
-      .getLogger(getClass().getName())
-      .log(Level.INFO, "css class = " + cssClass);
     if (cssClass != null && !cssClass.isEmpty()) {
       newField.addClass(cssClass);
     }

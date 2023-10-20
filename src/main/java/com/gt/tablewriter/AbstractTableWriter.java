@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -66,13 +67,7 @@ public abstract class AbstractTableWriter implements ITableWriter {
   }
 
   @Override
-  public void open() {
-    Logger.getLogger(getClass().getName()).log(Level.INFO, "Abriendo stream");
-
-    if (properties == null) {
-      properties = new Properties();
-    }
-
+  public void prepare() {
     this.setDateFormat(properties.getProperty("DATE_FORMAT", getDateFormat()));
     this.setDecimalFormat(
         properties.getProperty("DECIMAL_FORMAT", getDecimalFormat())
@@ -100,31 +95,56 @@ public abstract class AbstractTableWriter implements ITableWriter {
 
   @Override
   public void addField(BigInteger number) {
-    addField(number.longValue());
+    if (number != null) {
+      addField(number.intValue());
+    } else {
+      addField((Integer) null);
+    }
   }
 
   @Override
   public void addField(Short number) {
-    addField(number.intValue());
+    if (number != null) {
+      addField(number.intValue());
+    } else {
+      addField((Integer) null);
+    }
   }
 
   @Override
   public void addField(Float number) {
-    addField(number.doubleValue());
+    if (number != null) {
+      addField(number.doubleValue());
+    } else {
+      addField((Double) null);
+    }
   }
 
   @Override
   public void addField(BigDecimal number) {
-    addField(number.doubleValue());
+    if (number != null) {
+      addField(number.doubleValue());
+    } else {
+      addField((Double) null);
+    }
   }
 
   @Override
   public void addField(Calendar calendar) {
-    addField(calendar.getTime());
+    if (calendar != null) {
+      addField(calendar.getTime());
+    } else {
+      addField((Date) null);
+    }
   }
 
   @Override
   public <T> void addPojos(Iterable<T> iterable) {
+    this.addPojos(iterable, true);
+  }
+
+  @Override
+  public <T> void addPojos(Iterable<T> iterable, boolean writeTitles) {
     List<Method> methods = null;
 
     Iterator<T> iterator = iterable.iterator();
@@ -133,7 +153,9 @@ public abstract class AbstractTableWriter implements ITableWriter {
       T pojo = iterator.next();
       if (methods == null) {
         methods = findMethods(pojo.getClass());
-        writeTitles(methods);
+        if (writeTitles) {
+          writeTitles(getTitles(methods));
+        }
       }
       addPojo(pojo, methods);
     }
@@ -148,15 +170,20 @@ public abstract class AbstractTableWriter implements ITableWriter {
     }
   }
 
-  public void writeTitles(List<Method> methods) {
+  public <T> String[] getTitles(Class<T> pojoClass) {
+    return getTitles(findMethods(pojoClass));
+  }
+
+  public String[] getTitles(List<Method> methods) {
+    List<String> titles = new ArrayList<>();
     for (Method method : methods) {
       if (method.getName().startsWith("get")) {
-        addField(method.getName().substring(3));
+        titles.add(method.getName().substring(3));
       } else if (method.getName().startsWith("is")) {
-        addField(method.getName().substring(2));
+        titles.add(method.getName().substring(2));
       }
     }
-    addNewLine();
+    return titles.toArray(new String[] {});
   }
 
   public void writeTitles(String[] titles) {
@@ -192,10 +219,6 @@ public abstract class AbstractTableWriter implements ITableWriter {
 
   @Override
   public void addObjectValue(Object value) {
-    if (!isOpen()) {
-      this.open();
-    }
-
     if (value == null) {
       addObjectValue(String.class, "");
     } else {

@@ -4,25 +4,31 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class PdfTableWriter extends HtmlTableWriter {
 
   public PdfTableWriter() {
     super();
+    this.prepare();
   }
 
   public PdfTableWriter(Properties properties) {
     super(properties);
+    this.prepare();
   }
 
   @Override
-  public void open() {
+  public void prepare() {
+    if (template == null) {
+      template = properties.getProperty("TEMPLATE", null);
+    }
+    if (template == null) {
+      template = loadTemplateFromResources();
+    }
     if (this.template.startsWith("<!DOCTYPE html>")) {
       this.template = this.template.substring(15);
     }
-    super.open();
+    super.prepare();
   }
 
   @Override
@@ -30,8 +36,6 @@ public class PdfTableWriter extends HtmlTableWriter {
     this.doc.outerHtml();
 
     PdfRendererBuilder render = new PdfRendererBuilder();
-
-    Logger.getLogger(getClass().getName()).log(Level.INFO, doc.outerHtml());
 
     render.withHtmlContent(this.doc.outerHtml(), null);
     render.toStream(outputStream);

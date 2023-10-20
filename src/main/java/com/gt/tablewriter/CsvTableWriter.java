@@ -11,7 +11,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 public class CsvTableWriter extends AbstractTableWriter {
@@ -44,22 +43,28 @@ public class CsvTableWriter extends AbstractTableWriter {
 
   public CsvTableWriter() {
     super();
+    this.prepare();
   }
 
   public CsvTableWriter(Properties properties) {
     super(properties);
+    this.prepare();
   }
 
-  public boolean isOpen() {
-    return internalStream != null;
+  public CsvTableWriter(Properties properties, OutputStream outputStream) {
+    super(properties);
+    this.internalStream = outputStream;
+    this.prepare();
   }
 
   public CsvTableWriter(OutputStream outputStream) {
+    super();
     this.internalStream = outputStream;
+    this.prepare();
   }
 
-  public void open() {
-    super.open();
+  public void prepare() {
+    super.prepare();
 
     if (internalStream == null) {
       internalStream = new ByteArrayOutputStream();
