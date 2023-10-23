@@ -16,7 +16,7 @@ public class PdfTest {
     TestHelper.writeFieldsData(writer);
 
     assertDoesNotThrow(() -> {
-      writer.writeTo("tmp.pdf");
+      writer.writeTo("testOutput/tmp.pdf");
     });
   }
 }

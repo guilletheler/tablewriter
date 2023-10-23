@@ -321,8 +321,8 @@ public class TestHelper {
 
     writer.addLines(data);
 
-    data = TestHelper.buildData(colConfigs, 100);
+    List<Pojo> pojos = TestHelper.buildPojos(100);
 
-    writer.addPojos(data, false);
+    writer.addPojos(pojos, false);
   }
 }

@@ -16,7 +16,7 @@ public class ExcelTest {
     TestHelper.writeFieldsData(writer);
 
     assertDoesNotThrow(() -> {
-      writer.writeTo("tmp.xlsx");
+      writer.writeTo("testOutput/tmp.xlsx");
     });
   }
 }

@@ -4,6 +4,7 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
+import org.jsoup.helper.W3CDom;
 
 public class PdfTableWriter extends HtmlTableWriter {
 
@@ -18,26 +19,12 @@ public class PdfTableWriter extends HtmlTableWriter {
   }
 
   @Override
-  public void prepare() {
-    if (template == null) {
-      template = properties.getProperty("TEMPLATE", null);
-    }
-    if (template == null) {
-      template = loadTemplateFromResources();
-    }
-    if (this.template.startsWith("<!DOCTYPE html>")) {
-      this.template = this.template.substring(15);
-    }
-    super.prepare();
-  }
-
-  @Override
   public void writeTo(OutputStream outputStream) throws IOException {
     this.doc.outerHtml();
 
     PdfRendererBuilder render = new PdfRendererBuilder();
 
-    render.withHtmlContent(this.doc.outerHtml(), null);
+    render.withW3cDocument(new W3CDom().fromJsoup(this.doc), "/");
     render.toStream(outputStream);
     render.run();
   }

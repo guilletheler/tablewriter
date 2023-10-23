@@ -16,7 +16,7 @@ public class HtmlTest {
     TestHelper.writeFieldsData(writer);
 
     assertDoesNotThrow(() -> {
-      writer.writeTo("tmp.html");
+      writer.writeTo("testOutput/tmp.html");
     });
   }
 }

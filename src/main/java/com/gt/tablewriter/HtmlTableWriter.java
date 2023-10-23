@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -18,15 +19,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-public class HtmlTableWriter extends AbstractTableWriter {
+public class HtmlTableWriter extends WithDataFormatTableWriter {
 
   @Getter
   @Setter
-  String template;
-
-  @Getter
-  @Setter
-  DateFormat sdf = null;
+  String htmlTemplate;
 
   @Getter
   @Setter
@@ -46,14 +43,6 @@ public class HtmlTableWriter extends AbstractTableWriter {
 
   @Getter
   String tableDataId = "table-data";
-
-  @Getter
-  @Setter
-  DecimalFormat decf = null;
-
-  @Getter
-  @Setter
-  DecimalFormat intf = null;
 
   OutputStream outputStream;
 
@@ -88,15 +77,15 @@ public class HtmlTableWriter extends AbstractTableWriter {
   public void prepare() {
     super.prepare();
 
-    if (template == null) {
-      this.setTemplate(properties.getProperty("TEMPLATE", null));
+    if (htmlTemplate == null) {
+      this.setHtmlTemplate(properties.getProperty("HTML_TEMPLATE", null));
     }
 
-    if (template == null) {
-      this.setTemplate(loadTemplateFromResources());
+    if (htmlTemplate == null) {
+      this.setHtmlTemplate(loadTemplateFromResources());
     }
 
-    this.doc = Jsoup.parse(this.template);
+    this.doc = Jsoup.parse(this.htmlTemplate);
 
     this.setTableDataId(
         properties.getProperty("TABLE_DATA_ID", this.tableDataId)
@@ -161,59 +150,13 @@ public class HtmlTableWriter extends AbstractTableWriter {
     this.tableElement.appendChild(curRow);
   }
 
-  public void addField(Integer value) {
-    if (value != null) {
-      write(intf.format(value), this.numberCssClass);
-    } else {
-      write("", this.numberCssClass);
-    }
-  }
-
-  public void addField(Long value) {
-    if (value != null) {
-      write(intf.format(value), this.numberCssClass);
-    } else {
-      write("", this.numberCssClass);
-    }
-  }
-
-  public void addField(Double value) {
-    if (value != null) {
-      write(decf.format(value), this.numberCssClass);
-    } else {
-      write("", this.numberCssClass);
-    }
-  }
-
-  public void addField(String value) {
-    if (value != null) {
-      write(value, stringCssClass);
-    } else {
-      write("", stringCssClass);
-    }
-  }
-
-  public void addField(Date value) {
-    if (value != null) {
-      write(sdf.format(value), dateCssClass);
-    } else {
-      write("", dateCssClass);
-    }
-  }
-
-  @Override
-  public void addField(Boolean value) {
-    if (value != null) {
-      write((value ? "Si" : "No"), booleanCssClass);
-    } else {
-      write("", booleanCssClass);
-    }
-  }
-
   public void close() {}
 
-  private void write(String formatedField, String cssClass) {
+  @Override
+  protected void internalAddField(String formatedField, Class<?> clazz) {
     Element newField = doc.createElement("td");
+
+    String cssClass = getCssClass(clazz);
 
     if (cssClass != null && !cssClass.isEmpty()) {
       newField.addClass(cssClass);
@@ -226,6 +169,21 @@ public class HtmlTableWriter extends AbstractTableWriter {
     }
 
     this.curRow.appendChild(newField);
+  }
+
+  private String getCssClass(Class<?> clazz) {
+    if (clazz != null) {
+      if (Number.class.isAssignableFrom(clazz)) {
+        return numberCssClass;
+      }
+      if (clazz == Calendar.class || clazz == Date.class) {
+        return dateCssClass;
+      }
+      if (clazz == Boolean.class || clazz == boolean.class) {
+        return booleanCssClass;
+      }
+    }
+    return null;
   }
 
   public void writeTo(OutputStream outputStream) throws IOException {

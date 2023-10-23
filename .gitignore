@@ -102,3 +102,6 @@ documentacion/modeliows/picker/project.conf
 .history/
 
 .attach_pid*
+
+# Test output
+/testOutput

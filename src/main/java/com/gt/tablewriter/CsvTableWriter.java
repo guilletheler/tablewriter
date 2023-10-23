@@ -3,9 +3,6 @@ package com.gt.tablewriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -13,7 +10,7 @@ import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.Setter;
 
-public class CsvTableWriter extends AbstractTableWriter {
+public class CsvTableWriter extends WithDataFormatTableWriter {
 
   @Getter
   @Setter
@@ -22,18 +19,6 @@ public class CsvTableWriter extends AbstractTableWriter {
   @Getter
   @Setter
   String EOL = "\n";
-
-  @Getter
-  @Setter
-  DateFormat sdf = null;
-
-  @Getter
-  @Setter
-  DecimalFormat decf = null;
-
-  @Getter
-  @Setter
-  DecimalFormat intf = null;
 
   boolean first = true;
 
@@ -66,77 +51,17 @@ public class CsvTableWriter extends AbstractTableWriter {
   public void prepare() {
     super.prepare();
 
-    if (internalStream == null) {
-      internalStream = new ByteArrayOutputStream();
-    }
-
     this.setSeparator(properties.getProperty("SEPARATOR", this.getSeparator()));
     this.setEOL(properties.getProperty("EOL", this.getEOL()));
 
-    sdf = new SimpleDateFormat(this.getDateFormat());
-
-    decf = new DecimalFormat(this.getDecimalFormat());
-    intf = new DecimalFormat(this.getIntegerFormat());
+    if (internalStream == null) {
+      internalStream = new ByteArrayOutputStream();
+    }
   }
 
   public void addNewLine() {
     this.write(getEOL());
     first = true;
-  }
-
-  public void addField(Integer value) {
-    if (value != null) {
-      internalAddField(intf.format(value));
-    } else {
-      internalAddField("");
-    }
-    first = false;
-  }
-
-  public void addField(Long value) {
-    if (value != null) {
-      internalAddField(intf.format(value));
-    } else {
-      internalAddField("");
-    }
-    first = false;
-  }
-
-  public void addField(Double value) {
-    if (value != null) {
-      internalAddField(decf.format(value));
-    } else {
-      internalAddField("");
-    }
-    first = false;
-  }
-
-  public void addField(String value) {
-    if (value != null) {
-      internalAddField(value);
-    } else {
-      internalAddField("");
-    }
-    first = false;
-  }
-
-  public void addField(Date value) {
-    if (value != null) {
-      internalAddField(sdf.format(value));
-    } else {
-      internalAddField("");
-    }
-    first = false;
-  }
-
-  @Override
-  public void addField(Boolean value) {
-    if (value != null) {
-      internalAddField(value ? "Si" : "No");
-    } else {
-      internalAddField("");
-    }
-    first = false;
   }
 
   public void close() {
@@ -155,7 +80,7 @@ public class CsvTableWriter extends AbstractTableWriter {
     }
   }
 
-  private void internalAddField(String formatedField) {
+  protected void internalAddField(String formatedField, Class<?> clazz) {
     boolean containSeparator = false;
 
     if (
@@ -179,6 +104,8 @@ public class CsvTableWriter extends AbstractTableWriter {
         .getLogger(AbstractTableWriter.class.getName())
         .log(Level.SEVERE, "Error escribiendo en outputStream", e);
     }
+
+    first = false;
   }
 
   private void write(String string) {

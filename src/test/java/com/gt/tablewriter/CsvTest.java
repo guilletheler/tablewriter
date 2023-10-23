@@ -64,7 +64,7 @@ public class CsvTest {
 
     Properties props = new Properties();
     props.setProperty("DATE_FORMAT", "dd/MM/yyyy");
-    props.setProperty("TEMPLATE", template);
+    props.setProperty("HTML_TEMPLATE", template);
 
     ITableWriter writer = new CsvTableWriter(props);
     // ITableWriter writer = new XlsxTableWriter(props);
@@ -81,7 +81,7 @@ public class CsvTest {
     writer.addLines(data);
 
     assertDoesNotThrow(() -> {
-      writer.writeTo("tmp.csv");
+      writer.writeTo("testOutput/tmp.csv");
     });
   }
 
@@ -96,7 +96,7 @@ public class CsvTest {
     TestHelper.writeFieldsData(writer);
 
     assertDoesNotThrow(() -> {
-      writer.writeTo("tmp.csv");
+      writer.writeTo("testOutput/tmpPojo.csv");
     });
   }
 }
