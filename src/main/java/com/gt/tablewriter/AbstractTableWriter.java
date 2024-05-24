@@ -7,6 +7,9 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -23,23 +26,23 @@ import lombok.Setter;
 public abstract class AbstractTableWriter implements ITableWriter {
 
   static final Class<?>[] SUPPORTED_CLASSES = {
-    Short.class,
-    short.class,
-    Integer.class,
-    int.class,
-    Long.class,
-    long.class,
-    BigInteger.class,
-    Float.class,
-    float.class,
-    Double.class,
-    double.class,
-    BigDecimal.class,
-    Boolean.class,
-    boolean.class,
-    String.class,
-    Date.class,
-    Calendar.class,
+      Short.class,
+      short.class,
+      Integer.class,
+      int.class,
+      Long.class,
+      long.class,
+      BigInteger.class,
+      Float.class,
+      float.class,
+      Double.class,
+      double.class,
+      BigDecimal.class,
+      Boolean.class,
+      boolean.class,
+      String.class,
+      Date.class,
+      Calendar.class,
   };
 
   @Getter
@@ -70,11 +73,9 @@ public abstract class AbstractTableWriter implements ITableWriter {
   public void prepare() {
     this.setDateFormat(properties.getProperty("DATE_FORMAT", getDateFormat()));
     this.setDecimalFormat(
-        properties.getProperty("DECIMAL_FORMAT", getDecimalFormat())
-      );
+        properties.getProperty("DECIMAL_FORMAT", getDecimalFormat()));
     this.setIntegerFormat(
-        properties.getProperty("INTEGER_FORMAT", getIntegerFormat())
-      );
+        properties.getProperty("INTEGER_FORMAT", getIntegerFormat()));
   }
 
   @Override
@@ -133,6 +134,24 @@ public abstract class AbstractTableWriter implements ITableWriter {
   public void addField(Calendar calendar) {
     if (calendar != null) {
       addField(calendar.getTime());
+    } else {
+      addField((Date) null);
+    }
+  }
+
+  @Override
+  public void addField(LocalDate value) {
+    if (value != null) {
+      addField(Date.from(value.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()));
+    } else {
+      addField((Date) null);
+    }
+  }
+
+  @Override
+  public void addField(LocalDateTime value) {
+    if (value != null) {
+      addField(Date.from(value.atZone(ZoneId.systemDefault()).toInstant()));
     } else {
       addField((Date) null);
     }
@@ -203,13 +222,12 @@ public abstract class AbstractTableWriter implements ITableWriter {
         try {
           addObjectValue(method.getReturnType(), method.invoke(pojo));
         } catch (
-          IllegalAccessException
-          | IllegalArgumentException
-          | InvocationTargetException e
-        ) {
+            IllegalAccessException
+            | IllegalArgumentException
+            | InvocationTargetException e) {
           Logger
-            .getLogger(getClass().getName())
-            .log(Level.SEVERE, "Error adding field", e);
+              .getLogger(getClass().getName())
+              .log(Level.SEVERE, "Error adding field", e);
         }
       }
     }
@@ -267,16 +285,21 @@ public abstract class AbstractTableWriter implements ITableWriter {
       case "Calendar":
         addField((Calendar) value);
         break;
+      case "LocalDate":
+        addField((LocalDate) value);
+        break;
+      case "LocalDateTime":
+        addField((LocalDateTime) value);
+        break;
       case "Timestamp":
         addField(new Date(((Timestamp) value).getTime()));
         break;
       default:
         Logger
-          .getLogger(getClass().getName())
-          .log(
-            Level.WARNING,
-            "Clase no soportada: " + objectClass.getSimpleName()
-          );
+            .getLogger(getClass().getName())
+            .log(
+                Level.WARNING,
+                "Clase no soportada: " + objectClass.getSimpleName());
         addField(value.toString());
         break;
     }
@@ -284,18 +307,12 @@ public abstract class AbstractTableWriter implements ITableWriter {
 
   private <T> List<Method> findMethods(Class<T> pojoClass) {
     List<Method> getters = Arrays
-      .asList(pojoClass.getMethods())
-      .stream()
-      .filter(method ->
-        (
-          (
-            method.getName().startsWith("get") ||
-            method.getName().startsWith("is")
-          ) &&
-          supportedClass(method.getReturnType())
-        )
-      )
-      .collect(Collectors.toList());
+        .asList(pojoClass.getMethods())
+        .stream()
+        .filter(method -> ((method.getName().startsWith("get") ||
+            method.getName().startsWith("is")) &&
+            supportedClass(method.getReturnType())))
+        .collect(Collectors.toList());
 
     return getters;
   }
