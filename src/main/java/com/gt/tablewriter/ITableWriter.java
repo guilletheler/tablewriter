@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Properties;
 
 public interface ITableWriter {
   void prepare();
@@ -52,11 +53,19 @@ public interface ITableWriter {
 
   void addField(LocalDateTime value);
 
-  void close();
+  void addField(Enum<?> value);
+
+  default void close() {}
 
   void writeTo(OutputStream outputStream) throws IOException;
 
   void writeTo(String fileName) throws IOException;
 
   void addObjectValue(Object value);
+
+  Properties getProperties();
+
+  default void setProperty(String key, String value) {
+    this.getProperties().put(key, value);
+  }
 }

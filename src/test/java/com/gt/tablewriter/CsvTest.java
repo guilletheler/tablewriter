@@ -22,28 +22,22 @@ public class CsvTest {
     colConfigs = new ArrayList<>();
 
     colConfigs.add(
-      new ColConfig<String>("Nombre", String.class, 10, 18, null, null, null)
-    );
+        new ColConfig<String>("Nombre", String.class, 10, 18, null, null, null));
     colConfigs.add(
-      new ColConfig<Date>("Fecha", Date.class, null, null, null, null, null)
-    );
+        new ColConfig<Date>("Fecha", Date.class, null, null, null, null, null));
     colConfigs.add(
-      new ColConfig<Integer>("Numero", Integer.class, 10, 18, null, null, null)
-    );
+        new ColConfig<Integer>("Numero", Integer.class, 10, 18, null, null, null));
     colConfigs.add(
-      new ColConfig<Double>("Importe", Double.class, 10, 18, null, null, null)
-    );
+        new ColConfig<Double>("Importe", Double.class, 10, 18, null, null, null));
     colConfigs.add(
-      new ColConfig<Boolean>(
-        "booleano",
-        Boolean.class,
-        10,
-        18,
-        null,
-        null,
-        null
-      )
-    );
+        new ColConfig<Boolean>(
+            "booleano",
+            Boolean.class,
+            10,
+            18,
+            null,
+            null,
+            null));
   }
 
   @Test
@@ -53,12 +47,12 @@ public class CsvTest {
     List<Object[]> data = TestHelper.buildData(colConfigs, 999);
 
     // le agrego valores nulos para ver si anda con nulos
-    data.add(new Object[] { null, null, null, null, null });
+    data.add(new Object[] {null, null, null, null, null});
 
     assertEquals(1000, data.size(), "El largo de los datos debería ser 1000");
 
     String template =
-      "<html><div>CBU: {{cbu}}<div><table id=\"table-data\"></table></html>";
+        "<html><div>CBU: {{cbu}}<div><table id=\"table-data\"></table><table id=\"table-data1\"></table></html>";
 
     template = template.replace("{{cbu}}", "65416846581496841654686844168");
 
@@ -66,17 +60,16 @@ public class CsvTest {
     props.setProperty("DATE_FORMAT", "dd/MM/yyyy");
     props.setProperty("HTML_TEMPLATE", template);
 
-    ITableWriter writer = new CsvTableWriter(props);
+    ITableWriter writer = TableWriterBuilder.buildTableWriter(TableWriterFormat.CSV);
     // ITableWriter writer = new XlsxTableWriter(props);
     // ITableWriter writer = new PdfTableWriter(props);
 
     writer.writeTitles(
-      colConfigs
-        .stream()
-        .map(cc -> cc.name)
-        .collect(Collectors.toList())
-        .toArray(new String[] {})
-    );
+        colConfigs
+            .stream()
+            .map(cc -> cc.name)
+            .collect(Collectors.toList())
+            .toArray(new String[] {}));
 
     writer.addLines(data);
 

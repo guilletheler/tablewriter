@@ -10,7 +10,7 @@ public class ExcelTest {
   @Test
   @DisplayName("Generar y escribir xlsx")
   void xlsxTest() {
-    ITableWriter writer = new XlsxTableWriter();
+    ITableWriter writer = TableWriterBuilder.buildTableWriter(TableWriterFormat.XLSX);
 
     TestHelper.writePlainData(writer);
     TestHelper.writeFieldsData(writer);

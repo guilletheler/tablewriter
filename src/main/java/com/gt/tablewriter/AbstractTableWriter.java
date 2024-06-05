@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +27,12 @@ import lombok.Setter;
 
 public abstract class AbstractTableWriter implements ITableWriter {
 
-  static final Class<?>[] SUPPORTED_CLASSES = {
+  public static final String PROPERTY_DATE_FORMAT = "DATE_FORMAT";
+  public static final String PROPERTY_TIME_FORMAT = "TIME_FORMAT";
+  public static final String PROPERTY_DECIMAL_FORMAT = "DECIMAL_FORMAT";
+  public static final String PROPERTY_INTEGER_FORMAT = "INTEGER_FORMAT";
+
+  protected static final Class<?>[] SUPPORTED_CLASSES = {
       Short.class,
       short.class,
       Integer.class,
@@ -43,39 +50,52 @@ public abstract class AbstractTableWriter implements ITableWriter {
       String.class,
       Date.class,
       Calendar.class,
+      LocalDate.class,
+      LocalDateTime.class,
+      LocalTime.class,
+      Enum.class
   };
 
   @Getter
   @Setter
-  String dateFormat = "yyyy/MM/dd HH:mm";
+  private String dateFormat = "yyyy/MM/dd HH:mm";
 
   @Getter
   @Setter
-  String decimalFormat = "#,##0.00";
+  private String timeFormat = "HH:mm:ss";
 
   @Getter
   @Setter
-  String integerFormat = "#,##0";
+  private String decimalFormat = "#,##0.00";
 
   @Getter
   @Setter
-  Properties properties;
+  private String integerFormat = "#,##0";
+
+  @Getter
+  private final Properties properties;
 
   public AbstractTableWriter() {
     this.properties = new Properties();
   }
 
   public AbstractTableWriter(Properties properties) {
-    this.properties = properties;
+    this();
+    if (properties != null) {
+      this.properties.putAll(properties);
+    }
   }
 
   @Override
   public void prepare() {
-    this.setDateFormat(properties.getProperty("DATE_FORMAT", getDateFormat()));
+    this.setDateFormat(
+        properties.getProperty(PROPERTY_DATE_FORMAT, getDateFormat()));
     this.setDecimalFormat(
-        properties.getProperty("DECIMAL_FORMAT", getDecimalFormat()));
+        properties.getProperty(PROPERTY_DECIMAL_FORMAT, getDecimalFormat()));
     this.setIntegerFormat(
-        properties.getProperty("INTEGER_FORMAT", getIntegerFormat()));
+        properties.getProperty(PROPERTY_INTEGER_FORMAT, getIntegerFormat()));
+    this.setTimeFormat(
+        properties.getProperty(PROPERTY_TIME_FORMAT, getTimeFormat()));
   }
 
   @Override
@@ -155,6 +175,11 @@ public abstract class AbstractTableWriter implements ITableWriter {
     } else {
       addField((Date) null);
     }
+  }
+
+  @Override
+  public void addField(Enum<?> value) {
+    this.addField(Optional.ofNullable(value).map(val -> val.name()).orElse(""));
   }
 
   @Override
@@ -294,6 +319,9 @@ public abstract class AbstractTableWriter implements ITableWriter {
       case "Timestamp":
         addField(new Date(((Timestamp) value).getTime()));
         break;
+      case "Enum":
+        addField((Enum<?>) value);
+        break;
       default:
         Logger
             .getLogger(getClass().getName())
@@ -320,4 +348,6 @@ public abstract class AbstractTableWriter implements ITableWriter {
   private boolean supportedClass(Class<?> returnType) {
     return Arrays.asList(SUPPORTED_CLASSES).contains(returnType);
   }
+
+
 }

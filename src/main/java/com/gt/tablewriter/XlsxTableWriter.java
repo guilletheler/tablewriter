@@ -20,165 +20,164 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class XlsxTableWriter extends AbstractTableWriter {
 
-  @Getter
-  Workbook wb;
+    public static final String PROPERTY_EXCEL_FORMAT = "EXCEL_FORMAT";
+    public static final String PROPERTY_SHEET_NAME = "SHEET_NAME";
 
-  @Getter
-  Sheet sheet;
+    @Getter
+    Workbook wb;
 
-  Row curRow;
+    @Getter
+    Sheet sheet;
 
-  @Getter
-  int nextRowNumber = 0;
+    Row curRow;
 
-  @Getter
-  int nextCellNumber = 0;
+    @Getter
+    int nextRowNumber = 0;
 
-  @Getter
-  CellStyle dateCellStyle;
+    @Getter
+    int nextCellNumber = 0;
 
-  @Getter
-  CellStyle integerCellStyle;
+    @Getter
+    CellStyle dateCellStyle;
 
-  @Getter
-  CellStyle numericCellStyle;
+    @Getter
+    CellStyle integerCellStyle;
 
-  public XlsxTableWriter() {
-    super();
-    this.prepare();
-  }
+    @Getter
+    CellStyle numericCellStyle;
 
-  public XlsxTableWriter(Properties properties) {
-    super(properties);
-    this.prepare();
-  }
-
-  public void prepare() {
-    super.prepare();
-
-    if (
-      getProperties()
-        .getProperty("EXCEL_FORMAT", "xlsx")
-        .equalsIgnoreCase("xls")
-    ) {
-      wb = new HSSFWorkbook();
-    } else {
-      wb = new XSSFWorkbook();
+    public XlsxTableWriter() {
+        super();
+        this.prepare();
     }
 
-    dateCellStyle = wb.createCellStyle();
-    dateCellStyle.setDataFormat(
-      wb.getCreationHelper().createDataFormat().getFormat(getDateFormat())
-    );
-    dateCellStyle.setAlignment(HorizontalAlignment.LEFT);
-
-    integerCellStyle = wb.createCellStyle();
-    integerCellStyle.setDataFormat(
-      wb.getCreationHelper().createDataFormat().getFormat(getIntegerFormat())
-    );
-
-    numericCellStyle = wb.createCellStyle();
-    numericCellStyle.setDataFormat(
-      wb.getCreationHelper().createDataFormat().getFormat(getDecimalFormat())
-    );
-
-    sheet = wb.createSheet(getProperties().getProperty("SHEET_NAME", "Hoja1"));
-    addNewLine();
-  }
-
-  public boolean isOpen() {
-    return wb != null;
-  }
-
-  public void addNewLine() {
-    curRow = sheet.createRow(nextRowNumber++);
-    nextCellNumber = 0;
-  }
-
-  public void addField(Integer value) {
-    Cell cell = createNewCell(CellType.NUMERIC);
-    if (value != null) {
-      cell.setCellValue(value.doubleValue());
-    }
-    cell.setCellStyle(integerCellStyle);
-  }
-
-  public void addField(Long value) {
-    Cell cell = createNewCell(CellType.NUMERIC);
-    if (value != null) {
-      cell.setCellValue(value.doubleValue());
-    }
-    cell.setCellStyle(integerCellStyle);
-  }
-
-  public void addField(Double value) {
-    Cell cell = createNewCell(CellType.NUMERIC);
-    if (value != null) {
-      cell.setCellValue(value.doubleValue());
-    }
-    cell.setCellStyle(numericCellStyle);
-  }
-
-  public void addField(String value) {
-    Cell cell = createNewCell();
-    if (value != null) {
-      cell.setCellValue(value);
-    }
-  }
-
-  public void addField(Date value) {
-    Cell cell = createNewCell();
-    if (value != null) {
-      cell.setCellValue(value);
-    }
-    cell.setCellStyle(dateCellStyle);
-  }
-
-  public void addField(Boolean value) {
-    Cell cell = createNewCell(CellType.BOOLEAN);
-    if (value != null) {
-      cell.setCellValue(value);
-    }
-  }
-
-  private Cell createNewCell() {
-    return createNewCell(null);
-  }
-
-  private Cell createNewCell(CellType cellType) {
-    Cell cell;
-    if (cellType != null) {
-      cell = curRow.createCell(nextCellNumber, cellType);
-    } else {
-      cell = curRow.createCell(nextCellNumber);
+    public XlsxTableWriter(Properties properties) {
+        super(properties);
+        this.prepare();
     }
 
-    nextCellNumber++;
+    public void prepare() {
+        super.prepare();
 
-    return cell;
-  }
+        if (getProperties()
+                .getProperty(
+                        PROPERTY_EXCEL_FORMAT, "xlsx")
+                .equalsIgnoreCase("xls")) {
+            wb = new HSSFWorkbook();
+        } else {
+            wb = new XSSFWorkbook();
+        }
 
-  public void writeTo(OutputStream outputStream) throws IOException {
-    for (int x = 0; x <= sheet.getPhysicalNumberOfRows(); x++) {
-      sheet.autoSizeColumn(x);
+        dateCellStyle = wb.createCellStyle();
+        dateCellStyle.setDataFormat(
+                wb.getCreationHelper().createDataFormat().getFormat(getDateFormat()));
+        dateCellStyle.setAlignment(HorizontalAlignment.LEFT);
+
+        integerCellStyle = wb.createCellStyle();
+        integerCellStyle.setDataFormat(
+                wb.getCreationHelper().createDataFormat().getFormat(getIntegerFormat()));
+
+        numericCellStyle = wb.createCellStyle();
+        numericCellStyle.setDataFormat(
+                wb.getCreationHelper().createDataFormat().getFormat(getDecimalFormat()));
+
+        sheet = wb.createSheet(getProperties().getProperty(PROPERTY_SHEET_NAME, "Hoja1"));
+        addNewLine();
     }
 
-    try {
-      wb.write(outputStream);
-    } catch (FileNotFoundException ex) {
-      Logger
-        .getLogger(XlsxTableWriter.class.getName())
-        .log(Level.SEVERE, "Error al escribir excel en outputStream", ex);
+    public boolean isOpen() {
+        return wb != null;
     }
-  }
 
-  public void close() {
-    try {
-      wb.close();
-    } catch (IOException ex) {
-      Logger
-        .getLogger(XlsxTableWriter.class.getName())
-        .log(Level.SEVERE, "error al cerrar excel", ex);
+    public void addNewLine() {
+        curRow = sheet.createRow(nextRowNumber++);
+        nextCellNumber = 0;
     }
-  }
+
+    public void addField(Integer value) {
+        Cell cell = createNewCell(CellType.NUMERIC);
+        if (value != null) {
+            cell.setCellValue(value.doubleValue());
+        }
+        cell.setCellStyle(integerCellStyle);
+    }
+
+    public void addField(Long value) {
+        Cell cell = createNewCell(CellType.NUMERIC);
+        if (value != null) {
+            cell.setCellValue(value.doubleValue());
+        }
+        cell.setCellStyle(integerCellStyle);
+    }
+
+    public void addField(Double value) {
+        Cell cell = createNewCell(CellType.NUMERIC);
+        if (value != null) {
+            cell.setCellValue(value.doubleValue());
+        }
+        cell.setCellStyle(numericCellStyle);
+    }
+
+    public void addField(String value) {
+        Cell cell = createNewCell();
+        if (value != null) {
+            cell.setCellValue(value);
+        }
+    }
+
+    public void addField(Date value) {
+        Cell cell = createNewCell();
+        if (value != null) {
+            cell.setCellValue(value);
+        }
+        cell.setCellStyle(dateCellStyle);
+    }
+
+    public void addField(Boolean value) {
+        Cell cell = createNewCell(CellType.BOOLEAN);
+        if (value != null) {
+            cell.setCellValue(value);
+        }
+    }
+
+    private Cell createNewCell() {
+        return createNewCell(null);
+    }
+
+    private Cell createNewCell(CellType cellType) {
+        Cell cell;
+        if (cellType != null) {
+            cell = curRow.createCell(nextCellNumber, cellType);
+        } else {
+            cell = curRow.createCell(nextCellNumber);
+        }
+
+        nextCellNumber++;
+
+        return cell;
+    }
+
+    public void writeTo(OutputStream outputStream) throws IOException {
+        for (int x = 0; x <= sheet.getPhysicalNumberOfRows(); x++) {
+            sheet.autoSizeColumn(x);
+        }
+
+        try {
+            wb.write(outputStream);
+        } catch (FileNotFoundException ex) {
+            Logger
+                    .getLogger(XlsxTableWriter.class.getName())
+                    .log(Level.SEVERE, "Error al escribir excel en outputStream", ex);
+        }
+    }
+
+    public void close() {
+        try {
+            wb.close();
+        } catch (IOException ex) {
+            Logger
+                    .getLogger(XlsxTableWriter.class.getName())
+                    .log(Level.SEVERE, "error al cerrar excel", ex);
+        }
+    }
 }

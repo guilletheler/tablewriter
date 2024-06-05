@@ -10,7 +10,7 @@ public class PdfTest {
   @Test
   @DisplayName("Generar y escribir html")
   void generarYescribirHtml() {
-    ITableWriter writer = new PdfTableWriter();
+    ITableWriter writer = TableWriterBuilder.buildTableWriter(TableWriterFormat.PDF);
 
     TestHelper.writePlainData(writer);
     TestHelper.writeFieldsData(writer);

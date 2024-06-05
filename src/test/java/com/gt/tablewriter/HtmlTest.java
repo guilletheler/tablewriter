@@ -10,7 +10,7 @@ public class HtmlTest {
   @Test
   @DisplayName("Generar y escribir html")
   void generarYescribirHtml() {
-    ITableWriter writer = new HtmlTableWriter();
+    ITableWriter writer = TableWriterBuilder.buildTableWriter(TableWriterFormat.HTML);
 
     TestHelper.writePlainData(writer);
     TestHelper.writeFieldsData(writer);

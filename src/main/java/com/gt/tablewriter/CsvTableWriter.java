@@ -12,13 +12,16 @@ import lombok.Setter;
 
 public class CsvTableWriter extends WithDataFormatTableWriter {
 
+  public static final String PROPERTY_SEPARATOR = "SEPARATOR";
+  public static final String PROPERTY_EOL = "EOL";
+
   @Getter
   @Setter
   String separator = ",";
 
   @Getter
   @Setter
-  String EOL = "\n";
+  String eol = "\n";
 
   boolean first = true;
 
@@ -51,8 +54,8 @@ public class CsvTableWriter extends WithDataFormatTableWriter {
   public void prepare() {
     super.prepare();
 
-    this.setSeparator(properties.getProperty("SEPARATOR", this.getSeparator()));
-    this.setEOL(properties.getProperty("EOL", this.getEOL()));
+    this.setSeparator(getProperties().getProperty(PROPERTY_SEPARATOR, this.getSeparator()));
+    this.setEol(getProperties().getProperty(PROPERTY_EOL, this.getEol()));
 
     if (internalStream == null) {
       internalStream = new ByteArrayOutputStream();
@@ -60,7 +63,7 @@ public class CsvTableWriter extends WithDataFormatTableWriter {
   }
 
   public void addNewLine() {
-    this.write(getEOL());
+    this.write(getEol());
     first = true;
   }
 
@@ -69,8 +72,8 @@ public class CsvTableWriter extends WithDataFormatTableWriter {
       internalStream.close();
     } catch (IOException e) {
       Logger
-        .getLogger(HtmlTableWriter.class.getName())
-        .log(Level.SEVERE, "Error al cerrar tablewriter", e);
+          .getLogger(HtmlTableWriter.class.getName())
+          .log(Level.SEVERE, "Error al cerrar tablewriter", e);
     }
   }
 
@@ -83,10 +86,8 @@ public class CsvTableWriter extends WithDataFormatTableWriter {
   protected void internalAddField(String formatedField, Class<?> clazz) {
     boolean containSeparator = false;
 
-    if (
-      !formatedField.startsWith("\"", 0) &&
-      formatedField.contains(this.separator)
-    ) {
+    if (!formatedField.startsWith("\"", 0) &&
+        formatedField.contains(this.separator)) {
       containSeparator = true;
     }
 
@@ -101,8 +102,8 @@ public class CsvTableWriter extends WithDataFormatTableWriter {
       }
     } catch (Exception e) {
       Logger
-        .getLogger(AbstractTableWriter.class.getName())
-        .log(Level.SEVERE, "Error escribiendo en outputStream", e);
+          .getLogger(AbstractTableWriter.class.getName())
+          .log(Level.SEVERE, "Error escribiendo en outputStream", e);
     }
 
     first = false;
@@ -113,20 +114,18 @@ public class CsvTableWriter extends WithDataFormatTableWriter {
       internalStream.write(string.getBytes());
     } catch (Exception e) {
       Logger
-        .getLogger(AbstractTableWriter.class.getName())
-        .log(Level.SEVERE, "Error escribiendo en outputStream", e);
+          .getLogger(AbstractTableWriter.class.getName())
+          .log(Level.SEVERE, "Error escribiendo en outputStream", e);
     }
   }
 
   public void writeTo(OutputStream outputStream) throws IOException {
     if (internalStream instanceof ByteArrayOutputStream) {
       outputStream.write(
-        ((ByteArrayOutputStream) internalStream).toByteArray()
-      );
+          ((ByteArrayOutputStream) internalStream).toByteArray());
     } else {
       throw new IllegalStateException(
-        "internalStream no es ByteArrayOutputStream"
-      );
+          "internalStream no es ByteArrayOutputStream");
     }
   }
 }
