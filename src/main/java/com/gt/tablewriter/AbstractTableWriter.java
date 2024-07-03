@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 
-public abstract class AbstractTableWriter implements ITableWriter {
+abstract class AbstractTableWriter implements ITableWriter {
 
   public static final String PROPERTY_DATE_FORMAT = "DATE_FORMAT";
   public static final String PROPERTY_TIME_FORMAT = "TIME_FORMAT";
