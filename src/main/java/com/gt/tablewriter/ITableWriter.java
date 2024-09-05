@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
@@ -50,6 +51,8 @@ public interface ITableWriter {
   void addField(Calendar value);
 
   void addField(LocalDate value);
+
+  void addField(LocalTime value);
 
   void addField(LocalDateTime value);
 

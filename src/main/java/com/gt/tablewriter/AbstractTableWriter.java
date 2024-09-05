@@ -51,6 +51,7 @@ abstract class AbstractTableWriter implements ITableWriter {
       Date.class,
       Calendar.class,
       LocalDate.class,
+      LocalTime.class,
       LocalDateTime.class,
       LocalTime.class,
       Enum.class
@@ -58,7 +59,11 @@ abstract class AbstractTableWriter implements ITableWriter {
 
   @Getter
   @Setter
-  private String dateFormat = "yyyy/MM/dd HH:mm";
+  private String dateFormat = "yyyy/MM/dd";
+
+  @Getter
+  @Setter
+  private String dateTimeFormat = "yyyy/MM/dd HH:mm";
 
   @Getter
   @Setter
@@ -88,8 +93,8 @@ abstract class AbstractTableWriter implements ITableWriter {
 
   @Override
   public void prepare() {
-    this.setDateFormat(
-        properties.getProperty(PROPERTY_DATE_FORMAT, getDateFormat()));
+    this.setDateTimeFormat(
+        properties.getProperty(PROPERTY_DATE_FORMAT, getDateTimeFormat()));
     this.setDecimalFormat(
         properties.getProperty(PROPERTY_DECIMAL_FORMAT, getDecimalFormat()));
     this.setIntegerFormat(
@@ -115,66 +120,28 @@ abstract class AbstractTableWriter implements ITableWriter {
   }
 
   @Override
-  public void addField(BigInteger number) {
-    if (number != null) {
-      addField(number.intValue());
-    } else {
-      addField((Integer) null);
-    }
+  public void addField(Short number) {
+    addField((Long) Optional.ofNullable(number).map(v -> v.longValue()).orElse(null));
   }
 
   @Override
-  public void addField(Short number) {
-    if (number != null) {
-      addField(number.intValue());
-    } else {
-      addField((Integer) null);
-    }
+  public void addField(Integer value) {
+    this.addField((Long) Optional.ofNullable(value).map(v -> v.longValue()).orElse(null));
+  }
+
+  @Override
+  public void addField(BigInteger number) {
+    addField((Long) Optional.ofNullable(number).map(v -> v.longValue()).orElse(null));
   }
 
   @Override
   public void addField(Float number) {
-    if (number != null) {
-      addField(number.doubleValue());
-    } else {
-      addField((Double) null);
-    }
+    addField((Double) Optional.ofNullable(number).map(v -> v.doubleValue()).orElse(null));
   }
 
   @Override
   public void addField(BigDecimal number) {
-    if (number != null) {
-      addField(number.doubleValue());
-    } else {
-      addField((Double) null);
-    }
-  }
-
-  @Override
-  public void addField(Calendar calendar) {
-    if (calendar != null) {
-      addField(calendar.getTime());
-    } else {
-      addField((Date) null);
-    }
-  }
-
-  @Override
-  public void addField(LocalDate value) {
-    if (value != null) {
-      addField(Date.from(value.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()));
-    } else {
-      addField((Date) null);
-    }
-  }
-
-  @Override
-  public void addField(LocalDateTime value) {
-    if (value != null) {
-      addField(Date.from(value.atZone(ZoneId.systemDefault()).toInstant()));
-    } else {
-      addField((Date) null);
-    }
+    addField((Double) Optional.ofNullable(number).map(v -> v.doubleValue()).orElse(null));
   }
 
   @Override
@@ -313,6 +280,9 @@ abstract class AbstractTableWriter implements ITableWriter {
       case "LocalDate":
         addField((LocalDate) value);
         break;
+      case "LocalTime":
+        addField((LocalTime) value);
+        break;
       case "LocalDateTime":
         addField((LocalDateTime) value);
         break;
@@ -323,12 +293,12 @@ abstract class AbstractTableWriter implements ITableWriter {
         addField((Enum<?>) value);
         break;
       default:
-        Logger
-            .getLogger(getClass().getName())
-            .log(
-                Level.WARNING,
-                "Clase no soportada: " + objectClass.getSimpleName());
-        addField(value.toString());
+        // Logger
+        // .getLogger(getClass().getName())
+        // .log(
+        // Level.WARNING,
+        // "Clase no soportada: " + objectClass.getSimpleName());
+        addField(Optional.ofNullable(value).map(v -> v.toString()).orElse(""));
         break;
     }
   }
@@ -337,17 +307,12 @@ abstract class AbstractTableWriter implements ITableWriter {
     List<Method> getters = Arrays
         .asList(pojoClass.getMethods())
         .stream()
-        .filter(method -> ((method.getName().startsWith("get") ||
-            method.getName().startsWith("is")) &&
-            supportedClass(method.getReturnType())))
+        .filter(
+            method -> !method.getName().equals("getClass")
+                && ((method.getName().startsWith("get") ||
+                    method.getName().startsWith("is"))))
         .collect(Collectors.toList());
 
     return getters;
   }
-
-  private boolean supportedClass(Class<?> returnType) {
-    return Arrays.asList(SUPPORTED_CLASSES).contains(returnType);
-  }
-
-
 }

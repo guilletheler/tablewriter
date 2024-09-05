@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 
@@ -19,6 +20,8 @@ public abstract class WithDataFormatTableWriter extends AbstractTableWriter {
   protected DateTimeFormatter ldf = null;
 
   protected DateTimeFormatter ltf = null;
+
+  protected DateTimeFormatter ldtf = null;
 
   protected DecimalFormat decf = null;
 
@@ -35,21 +38,15 @@ public abstract class WithDataFormatTableWriter extends AbstractTableWriter {
   @Override
   public void prepare() {
     super.prepare();
-    sdf = new SimpleDateFormat(this.getDateFormat());
+    sdf = new SimpleDateFormat(this.getDateTimeFormat());
     ldf = DateTimeFormatter.ofPattern(this.getDateFormat());
+    ldtf = DateTimeFormatter.ofPattern(this.getDateTimeFormat());
     ltf = DateTimeFormatter.ofPattern(this.getTimeFormat());
     decf = new DecimalFormat(this.getDecimalFormat());
     intf = new DecimalFormat(this.getIntegerFormat());
   }
 
-  public void addField(Integer value) {
-    if (value != null) {
-      internalAddField(intf.format(value), Integer.class);
-    } else {
-      internalAddField("", Integer.class);
-    }
-  }
-
+  @Override
   public void addField(Long value) {
     if (value != null) {
       internalAddField(intf.format(value), Long.class);
@@ -58,6 +55,7 @@ public abstract class WithDataFormatTableWriter extends AbstractTableWriter {
     }
   }
 
+  @Override
   public void addField(Double value) {
     if (value != null) {
       internalAddField(decf.format(value), Double.class);
@@ -66,6 +64,7 @@ public abstract class WithDataFormatTableWriter extends AbstractTableWriter {
     }
   }
 
+  @Override
   public void addField(String value) {
     if (value != null) {
       internalAddField(value, String.class);
@@ -74,6 +73,7 @@ public abstract class WithDataFormatTableWriter extends AbstractTableWriter {
     }
   }
 
+  @Override
   public void addField(Date value) {
     if (value != null) {
       internalAddField(sdf.format(value), Date.class);
@@ -82,6 +82,17 @@ public abstract class WithDataFormatTableWriter extends AbstractTableWriter {
     }
   }
 
+
+  @Override
+  public void addField(Calendar calendar) {
+    if (calendar != null) {
+      addField(calendar.getTime());
+    } else {
+      addField((Date) null);
+    }
+  }
+
+  @Override
   public void addField(LocalDate value) {
     if (value != null) {
       internalAddField(ldf.format(value), LocalDate.class);
@@ -90,14 +101,16 @@ public abstract class WithDataFormatTableWriter extends AbstractTableWriter {
     }
   }
 
+  @Override
   public void addField(LocalDateTime value) {
     if (value != null) {
-      internalAddField(ldf.format(value), LocalDateTime.class);
+      internalAddField(ldtf.format(value), LocalDateTime.class);
     } else {
       internalAddField("", LocalDateTime.class);
     }
   }
 
+  @Override
   public void addField(LocalTime value) {
     if (value != null) {
       internalAddField(ldf.format(value), LocalTime.class);

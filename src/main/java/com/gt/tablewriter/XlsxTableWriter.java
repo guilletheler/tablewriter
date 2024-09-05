@@ -3,11 +3,14 @@ package com.gt.tablewriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import lombok.Getter;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -17,6 +20,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import lombok.Getter;
 
 public class XlsxTableWriter extends AbstractTableWriter {
 
@@ -41,6 +45,12 @@ public class XlsxTableWriter extends AbstractTableWriter {
     CellStyle dateCellStyle;
 
     @Getter
+    CellStyle timeCellStyle;
+
+    @Getter
+    CellStyle dateTimeCellStyle;
+
+    @Getter
     CellStyle integerCellStyle;
 
     @Getter
@@ -56,6 +66,7 @@ public class XlsxTableWriter extends AbstractTableWriter {
         this.prepare();
     }
 
+    @Override
     public void prepare() {
         super.prepare();
 
@@ -73,6 +84,16 @@ public class XlsxTableWriter extends AbstractTableWriter {
                 wb.getCreationHelper().createDataFormat().getFormat(getDateFormat()));
         dateCellStyle.setAlignment(HorizontalAlignment.LEFT);
 
+        timeCellStyle = wb.createCellStyle();
+        timeCellStyle.setDataFormat(
+                wb.getCreationHelper().createDataFormat().getFormat(getTimeFormat()));
+        timeCellStyle.setAlignment(HorizontalAlignment.LEFT);
+
+        dateTimeCellStyle = wb.createCellStyle();
+        dateTimeCellStyle.setDataFormat(
+                wb.getCreationHelper().createDataFormat().getFormat(getDateTimeFormat()));
+        dateTimeCellStyle.setAlignment(HorizontalAlignment.LEFT);
+
         integerCellStyle = wb.createCellStyle();
         integerCellStyle.setDataFormat(
                 wb.getCreationHelper().createDataFormat().getFormat(getIntegerFormat()));
@@ -89,19 +110,13 @@ public class XlsxTableWriter extends AbstractTableWriter {
         return wb != null;
     }
 
+    @Override
     public void addNewLine() {
         curRow = sheet.createRow(nextRowNumber++);
         nextCellNumber = 0;
     }
 
-    public void addField(Integer value) {
-        Cell cell = createNewCell(CellType.NUMERIC);
-        if (value != null) {
-            cell.setCellValue(value.doubleValue());
-        }
-        cell.setCellStyle(integerCellStyle);
-    }
-
+    @Override
     public void addField(Long value) {
         Cell cell = createNewCell(CellType.NUMERIC);
         if (value != null) {
@@ -110,6 +125,7 @@ public class XlsxTableWriter extends AbstractTableWriter {
         cell.setCellStyle(integerCellStyle);
     }
 
+    @Override
     public void addField(Double value) {
         Cell cell = createNewCell(CellType.NUMERIC);
         if (value != null) {
@@ -118,6 +134,7 @@ public class XlsxTableWriter extends AbstractTableWriter {
         cell.setCellStyle(numericCellStyle);
     }
 
+    @Override
     public void addField(String value) {
         Cell cell = createNewCell();
         if (value != null) {
@@ -125,7 +142,26 @@ public class XlsxTableWriter extends AbstractTableWriter {
         }
     }
 
+    @Override
     public void addField(Date value) {
+        Cell cell = createNewCell();
+        if (value != null) {
+            cell.setCellValue(value);
+        }
+        cell.setCellStyle(dateTimeCellStyle);
+    }
+
+    @Override
+    public void addField(Calendar value) {
+        Cell cell = createNewCell();
+        if (value != null) {
+            cell.setCellValue(value);
+        }
+        cell.setCellStyle(dateTimeCellStyle);
+    }
+
+    @Override
+    public void addField(LocalDate value) {
         Cell cell = createNewCell();
         if (value != null) {
             cell.setCellValue(value);
@@ -133,6 +169,25 @@ public class XlsxTableWriter extends AbstractTableWriter {
         cell.setCellStyle(dateCellStyle);
     }
 
+    @Override
+    public void addField(LocalTime value) {
+        Cell cell = createNewCell();
+        if (value != null) {
+            cell.setCellValue(value.atDate(LocalDate.now()));
+        }
+        cell.setCellStyle(timeCellStyle);
+    }
+
+    @Override
+    public void addField(LocalDateTime value) {
+        Cell cell = createNewCell();
+        if (value != null) {
+            cell.setCellValue(value);
+        }
+        cell.setCellStyle(dateTimeCellStyle);
+    }
+
+    @Override
     public void addField(Boolean value) {
         Cell cell = createNewCell(CellType.BOOLEAN);
         if (value != null) {
@@ -157,6 +212,7 @@ public class XlsxTableWriter extends AbstractTableWriter {
         return cell;
     }
 
+    @Override
     public void writeTo(OutputStream outputStream) throws IOException {
         for (int x = 0; x <= sheet.getPhysicalNumberOfRows(); x++) {
             sheet.autoSizeColumn(x);
@@ -171,6 +227,7 @@ public class XlsxTableWriter extends AbstractTableWriter {
         }
     }
 
+    @Override
     public void close() {
         try {
             wb.close();
@@ -180,4 +237,5 @@ public class XlsxTableWriter extends AbstractTableWriter {
                     .log(Level.SEVERE, "error al cerrar excel", ex);
         }
     }
+
 }

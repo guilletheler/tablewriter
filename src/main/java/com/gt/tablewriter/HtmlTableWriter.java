@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
@@ -80,6 +83,7 @@ public class HtmlTableWriter extends WithDataFormatTableWriter {
         this.prepare();
     }
 
+    @Override
     public void prepare() {
         super.prepare();
 
@@ -143,6 +147,7 @@ public class HtmlTableWriter extends WithDataFormatTableWriter {
         return this.doc != null;
     }
 
+    @Override
     public void writeTitles(String[] titles) {
         Element titlesElement = this.doc.createElement("tr");
         this.tableElement.appendChild(titlesElement);
@@ -154,6 +159,7 @@ public class HtmlTableWriter extends WithDataFormatTableWriter {
         }
     }
 
+    @Override
     public void addNewLine() {
         this.curRow = this.doc.createElement("tr");
         this.tableElement.appendChild(curRow);
@@ -183,7 +189,11 @@ public class HtmlTableWriter extends WithDataFormatTableWriter {
             if (Number.class.isAssignableFrom(clazz)) {
                 return numberCssClass;
             }
-            if (clazz == Calendar.class || clazz == Date.class) {
+            if (clazz == Calendar.class
+                    || clazz == Date.class
+                    || clazz == LocalDate.class
+                    || clazz == LocalTime.class
+                    || clazz == LocalDateTime.class) {
                 return dateCssClass;
             }
             if (clazz == Boolean.class || clazz == boolean.class) {
