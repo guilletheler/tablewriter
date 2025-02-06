@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,8 +52,9 @@ abstract class AbstractTableWriter implements ITableWriter {
       Calendar.class,
       LocalDate.class,
       LocalTime.class,
-      LocalDateTime.class,
       LocalTime.class,
+      LocalDateTime.class,
+      ZonedDateTime.class,
       Enum.class
   };
 
@@ -281,6 +283,9 @@ abstract class AbstractTableWriter implements ITableWriter {
         break;
       case "LocalTime":
         addField((LocalTime) value);
+        break;
+      case "ZonedDateTime":
+        addField((ZonedDateTime) value);
         break;
       case "LocalDateTime":
         addField((LocalDateTime) value);

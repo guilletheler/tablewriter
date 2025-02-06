@@ -5,6 +5,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
@@ -98,6 +99,15 @@ public abstract class WithDataFormatTableWriter extends AbstractTableWriter {
       internalAddField(ldf.format(value), LocalDate.class);
     } else {
       internalAddField("", LocalDate.class);
+    }
+  }
+
+  @Override
+  public void addField(ZonedDateTime value) {
+    if (value != null) {
+      internalAddField(ldtf.format(value), ZonedDateTime.class);
+    } else {
+      internalAddField("", ZonedDateTime.class);
     }
   }
 

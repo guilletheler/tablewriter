@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
@@ -183,6 +184,15 @@ public class XlsxTableWriter extends AbstractTableWriter {
         Cell cell = createNewCell();
         if (value != null) {
             cell.setCellValue(value);
+        }
+        cell.setCellStyle(dateTimeCellStyle);
+    }
+
+    @Override
+    public void addField(ZonedDateTime value) {
+        Cell cell = createNewCell();
+        if (value != null) {
+            cell.setCellValue(value.toLocalDateTime());
         }
         cell.setCellStyle(dateTimeCellStyle);
     }

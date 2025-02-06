@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
@@ -55,6 +56,8 @@ public interface ITableWriter {
   void addField(LocalTime value);
 
   void addField(LocalDateTime value);
+
+  void addField(ZonedDateTime value);
 
   void addField(Enum<?> value);
 

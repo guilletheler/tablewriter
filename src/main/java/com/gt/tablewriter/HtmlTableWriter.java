@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
@@ -193,7 +193,7 @@ public class HtmlTableWriter extends WithDataFormatTableWriter {
                     || clazz == Date.class
                     || clazz == LocalDate.class
                     || clazz == LocalTime.class
-                    || clazz == LocalDateTime.class) {
+                    || clazz == ZonedDateTime.class) {
                 return dateCssClass;
             }
             if (clazz == Boolean.class || clazz == boolean.class) {
