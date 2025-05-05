@@ -9,6 +9,7 @@ import java.time.ZonedDateTime;
 import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -192,7 +193,8 @@ public class XlsxTableWriter extends AbstractTableWriter {
     public void addField(ZonedDateTime value) {
         Cell cell = createNewCell();
         if (value != null) {
-            cell.setCellValue(value.toLocalDateTime());
+            cell.setCellValue(
+                    Optional.ofNullable(value).map(zdt -> zdt.toLocalDateTime()).orElse(null));
         }
         cell.setCellStyle(dateTimeCellStyle);
     }
