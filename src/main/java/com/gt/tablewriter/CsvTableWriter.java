@@ -62,6 +62,12 @@ public class CsvTableWriter extends WithDataFormatTableWriter {
     }
   }
 
+  public void addCsvLine(String line) {
+    this.write(line);
+    this.write(getEol());
+    first = true;
+  }
+
   public void addNewLine() {
     this.write(getEol());
     first = true;

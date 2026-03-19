@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.gt.tablewriter</groupId>
 	<artifactId>tablewriter</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.1</version>
 
 	<properties>
 		<java.version>21</java.version>
@@ -13,9 +13,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<slf4j.version>2.0.16</slf4j.version>
-		<poi.version>5.4.0</poi.version>
+		<poi.version>5.5.1</poi.version>
 		<jsoup.version>1.18.3</jsoup.version>
-		<lombok.version>1.18.36</lombok.version>
+		<lombok.version>1.18.42</lombok.version>
 		<pdfbox.version>1.0.10</pdfbox.version>
 	</properties>
 
@@ -24,7 +24,7 @@
 			<dependency>
 				<groupId>org.junit</groupId>
 				<artifactId>junit-bom</artifactId>
-				<version>5.11.4</version>
+				<version>6.0.3</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -36,7 +36,6 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>${lombok.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
 		<dependency>
@@ -89,19 +88,19 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.14.0</version>
+				<version>3.15.0</version>
 				<configuration>
 					<parameters>true</parameters>
 				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.2.3</version>
+				<version>3.5.5</version>
 			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.11</version>
+				<version>0.8.13</version>
 				<executions>
 					<execution>
 						<goals>

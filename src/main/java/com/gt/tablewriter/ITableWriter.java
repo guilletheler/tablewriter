@@ -29,6 +29,8 @@ public interface ITableWriter {
 
   void addLines(Iterable<Object[]> line);
 
+  void addCsvLine(String line);
+
   void addField(String value);
 
   void addField(Short value);

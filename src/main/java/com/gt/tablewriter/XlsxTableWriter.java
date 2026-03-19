@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -119,6 +120,11 @@ public class XlsxTableWriter extends AbstractTableWriter {
     }
 
     @Override
+    public void addCsvLine(String line) {
+        addLine(line.split(","));
+    }
+
+    @Override
     public void addField(Long value) {
         Cell cell = createNewCell(CellType.NUMERIC);
         if (value != null) {
@@ -138,6 +144,25 @@ public class XlsxTableWriter extends AbstractTableWriter {
 
     @Override
     public void addField(String value) {
+        if (value == null) {
+            internalAddField(value);
+        } else if (StringUtils.isNumeric(value)) {
+            try {
+                this.addField(Long.valueOf(value));
+            } catch (NumberFormatException e) {
+                internalAddField(value);
+            }
+        } else {
+
+            try {
+                this.addField(Double.valueOf(value));
+            } catch (NumberFormatException e) {
+                internalAddField(value);
+            }
+        }
+    }
+
+    private void internalAddField(String value) {
         Cell cell = createNewCell();
         if (value != null) {
             cell.setCellValue(value);

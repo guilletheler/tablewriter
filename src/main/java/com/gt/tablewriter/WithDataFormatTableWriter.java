@@ -138,6 +138,11 @@ public abstract class WithDataFormatTableWriter extends AbstractTableWriter {
     }
   }
 
+  @Override
+  public void addCsvLine(String line) {
+    addLine(line.split(","));
+  }
+
   protected abstract void internalAddField(
       String formatedField,
       Class<?> clazz);
